@@ -76,6 +76,24 @@ body {
   animation: breathe 2.4s ease-in-out infinite;
 }
 
+.gh-link {
+  margin-left: auto;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--line);
+  transition: color 0.15s;
+}
+
+.gh-link:hover {
+  color: var(--red);
+  border-bottom-color: var(--red);
+}
+
+.fineprint a,
+.install-lead a {
+  color: inherit;
+}
+
 .title {
   margin-top: 40px;
   font-weight: 900;

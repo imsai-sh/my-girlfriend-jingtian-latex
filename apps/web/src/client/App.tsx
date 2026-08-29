@@ -6,6 +6,7 @@ import { useOnlineCount } from './useOnlineCount';
 import { InstallPanel } from './components/InstallPanel';
 import { Messages } from './components/Messages';
 import { EPIGRAPHS, FALLBACK_TOPICS, LOADING_LINES, pick, type Topic } from './quotes';
+import { REPO_URL } from './links';
 
 function usePath() {
   const [path, setPath] = useState(window.location.pathname);
@@ -104,6 +105,9 @@ export function App() {
               此刻 {online} 人正在问孙哥
             </span>
           )}
+          <a className="gh-link" href={REPO_URL} target="_blank" rel="noopener noreferrer">
+            GitHub 开源 · 求个 Star
+          </a>
         </div>
         <h1 className="title">
           <a
@@ -269,7 +273,10 @@ export function App() {
           )}
         </div>
         <p className="fineprint">
-          本站纯属虚构，如有雷同实属巧合 · 不构成任何投资建议 · 对话直接发往你本地的 CLI，不经过本站服务器
+          本站纯属虚构，如有雷同实属巧合 · 不构成任何投资建议 · 对话直接发往你本地的 CLI，不经过本站服务器 ·{' '}
+          <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
+            GitHub 开源
+          </a>
         </p>
       </footer>
     </div>

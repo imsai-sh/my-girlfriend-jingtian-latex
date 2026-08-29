@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { REPO_URL } from '../links';
 
 const isSafari =
   typeof navigator !== 'undefined' &&
@@ -35,8 +36,12 @@ export function InstallPanel() {
   return (
     <div className="install">
       <p className="install-lead">
-        孙哥不上云，只借你本地的 CLI 通灵——在终端跑一条命令，装一个只监听
-        127.0.0.1 的小桥（零依赖单文件，开源可审计）：
+        孙哥不上云，只借你本地的 CLI 通灵——在终端跑一条命令，装一个只监听 127.0.0.1
+        的小桥（零依赖单文件，
+        <a href={`${REPO_URL}/tree/main/apps/bridge`} target="_blank" rel="noopener noreferrer">
+          开源可审计
+        </a>
+        ）：
       </p>
       <div className="os-tabs">
         <button className={`os-tab ${os === 'unix' ? 'os-tab-on' : ''}`} onClick={() => setOs('unix')}>
