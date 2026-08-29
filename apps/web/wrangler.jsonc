@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sunge",
+  "main": "./src/worker/index.ts",
+  "compatibility_date": "2026-08-01",
+  "routes": [{ "pattern": "sunge.app", "custom_domain": true }],
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // /install.sh(.ps1) 与 /bridge.mjs 需要 Worker 注入站点 origin
+    "run_worker_first": ["/install.sh", "/install.ps1", "/bridge.mjs"]
+  },
+  "observability": { "enabled": true }
+}
