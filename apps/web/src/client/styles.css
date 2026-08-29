@@ -54,14 +54,26 @@ body {
   gap: 8px;
   font-family: var(--sans);
   font-size: 12px;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.12em;
   color: var(--ink-soft);
   border-top: 3px solid var(--ink);
   padding-top: 14px;
+  min-height: 32px;
 }
 
-.masthead-meta .masthead-dot {
-  color: var(--red);
+.online {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.online-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2e7d4f;
+  box-shadow: 0 0 0 3px rgba(46, 125, 79, 0.15);
+  animation: breathe 2.4s ease-in-out infinite;
 }
 
 .title {

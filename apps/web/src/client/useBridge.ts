@@ -11,12 +11,13 @@ export type BridgeState = {
   status: 'checking' | 'connected' | 'missing';
   base: string; // '' 表示与页面同源（从桥直接打开时）
   version: string | null;
+  site: string | null; // 桥所镜像的站点 origin
   agents: AgentInfo[];
   latestVersion: string | null;
   rescan: () => void;
 };
 
-const BRIDGE_PORT = 35827;
+export const BRIDGE_PORT = 35827;
 
 function candidates(): string[] {
   const { protocol, hostname, origin } = window.location;
@@ -31,6 +32,7 @@ export function useBridge(): BridgeState {
   const [status, setStatus] = useState<BridgeState['status']>('checking');
   const [base, setBase] = useState('');
   const [version, setVersion] = useState<string | null>(null);
+  const [site, setSite] = useState<string | null>(null);
   const [agents, setAgents] = useState<AgentInfo[]>([]);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const timer = useRef<number | undefined>(undefined);
@@ -41,7 +43,7 @@ export function useBridge(): BridgeState {
       try {
         const r = await fetch(`${b}/api/health`, { signal: AbortSignal.timeout(2000) });
         if (!r.ok) continue;
-        const h = (await r.json()) as { name?: string; version?: string };
+        const h = (await r.json()) as { name?: string; version?: string; site?: string | null };
         if (h.name !== 'sunge-bridge') continue;
         const ar = await fetch(`${b}/api/agents${rescan ? '?rescan' : ''}`, {
           signal: AbortSignal.timeout(15000),
@@ -50,6 +52,7 @@ export function useBridge(): BridgeState {
         failStreak.current = 0;
         setBase(b);
         setVersion(h.version ?? null);
+        setSite(h.site ?? null);
         setAgents(list);
         setStatus('connected');
         return true;
@@ -89,5 +92,5 @@ export function useBridge(): BridgeState {
     void probe(true);
   }, [probe]);
 
-  return { status, base, version, agents, latestVersion, rescan };
+  return { status, base, version, site, agents, latestVersion, rescan };
 }

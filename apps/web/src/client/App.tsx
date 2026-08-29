@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useBridge } from './useBridge';
+import { useOnlineCount } from './useOnlineCount';
 import { InstallPanel } from './components/InstallPanel';
 import { Messages } from './components/Messages';
 import { EPIGRAPHS, FALLBACK_TOPICS, LOADING_LINES, pick, type Topic } from './quotes';
@@ -40,6 +41,7 @@ function useTopics(): Topic[] {
 
 export function App() {
   const bridge = useBridge();
+  const online = useOnlineCount(bridge.site);
   const topics = useTopics();
   const { path, nav } = usePath();
   const [agentId, setAgentId] = useState<string | null>(null);
@@ -96,9 +98,12 @@ export function App() {
     <div className={`page ${inChat ? 'page-chatting' : ''}`}>
       <header className="masthead">
         <div className="masthead-meta">
-          <span>第二版 v2.0</span>
-          <span className="masthead-dot">·</span>
-          <span>AI 炼化工程</span>
+          {online !== null && online > 0 && (
+            <span className="online">
+              <span className="online-dot" />
+              此刻 {online} 人正在问孙哥
+            </span>
+          )}
         </div>
         <h1 className="title">
           <a

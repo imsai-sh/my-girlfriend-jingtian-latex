@@ -1,10 +1,71 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 
+type DurableObjectStub = { fetch: typeof fetch };
+type DurableObjectNamespace = {
+  idFromName(name: string): unknown;
+  get(id: unknown): DurableObjectStub;
+};
+
 type Bindings = {
   ASSETS: { fetch: typeof fetch };
+  PRESENCE: DurableObjectNamespace;
 };
 type AppEnv = { Bindings: Bindings };
+
+declare const WebSocketPair: new () => { 0: WebSocket; 1: WebSocket };
+
+// 实时在线人数：单例 Durable Object，页面开 WebSocket 进来，
+// 用 Hibernation API 托管连接（空闲时不计费），人数变化时广播给所有连接。
+export class Presence {
+  private ctx: {
+    acceptWebSocket(ws: WebSocket): void;
+    getWebSockets(): (WebSocket & { readyState: number })[];
+  };
+
+  constructor(state: never) {
+    this.ctx = state;
+  }
+
+  private count() {
+    return this.ctx.getWebSockets().filter((ws) => ws.readyState === 1).length;
+  }
+
+  private broadcast() {
+    const msg = JSON.stringify({ count: this.count() });
+    for (const ws of this.ctx.getWebSockets()) {
+      try {
+        ws.send(msg);
+      } catch {
+        // 濒死连接发不出去没关系，close 回调会再广播
+      }
+    }
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') {
+      return Response.json({ count: this.count() });
+    }
+    const pair = new WebSocketPair();
+    this.ctx.acceptWebSocket(pair[1]);
+    this.broadcast();
+    return new Response(null, { status: 101, webSocket: pair[0] } as ResponseInit & { webSocket: WebSocket });
+  }
+
+  async webSocketClose(ws: WebSocket) {
+    try {
+      ws.close();
+    } catch {}
+    this.broadcast();
+  }
+
+  async webSocketError(ws: WebSocket) {
+    try {
+      ws.close();
+    } catch {}
+    this.broadcast();
+  }
+}
 
 const app = new Hono<AppEnv>();
 
@@ -28,6 +89,11 @@ function serveTemplated(assetPath: string, contentType: string) {
 app.get('/install.sh', serveTemplated('/install.sh', 'text/x-shellscript; charset=utf-8'));
 app.get('/install.ps1', serveTemplated('/install.ps1', 'text/plain; charset=utf-8'));
 app.get('/bridge.mjs', serveTemplated('/bridge.mjs', 'text/javascript; charset=utf-8'));
+
+app.get('/api/presence', (c) => {
+  const id = c.env.PRESENCE.idFromName('global');
+  return c.env.PRESENCE.get(id).fetch(c.req.raw);
+});
 
 // 其余请求全部交给静态资源（SPA fallback 由 assets 配置处理）
 app.all('*', (c) => c.env.ASSETS.fetch(c.req.raw));
